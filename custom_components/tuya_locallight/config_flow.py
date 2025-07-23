@@ -47,16 +47,26 @@ class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
         # Show all current devices, allow to add new or edit/remove existing
         return await self.async_step_add_device()
 
-    async def async_step_add_device(self, user_input=None):
-        profiles = get_profiles()
-        schema = vol.Schema({
-            vol.Required(CONF_NAME): str,
-            vol.Required(CONF_DID): str,
-            vol.Required(CONF_CID): str,
-            vol.Required(CONF_PROFILE, default=profiles[0][0]): vol.In({p[0]: p[1] for p in profiles}),
-        })
-        if user_input is not None:
-            devices = self.config_entry.options.get("devices", [])
-            devices.append(user_input)
-            return self.async_create_entry(title="Devices", data={"devices": devices})
-        return self.async_show_form(step_id="add_device", data_schema=schema)
+    class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
+        def __init__(self, config_entry):
+            self.config_entry = config_entry
+
+        async def async_step_init(self, user_input=None):
+            # Можно сделать тут меню выбора: добавить, удалить, отредактировать
+            return await self.async_step_add_device()
+
+        async def async_step_add_device(self, user_input=None):
+            profiles = get_profiles()
+            schema = vol.Schema({
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_DID): str,
+                vol.Required(CONF_CID): str,
+                vol.Required(CONF_PROFILE, default=profiles[0][0]): vol.In({p[0]: p[1] for p in profiles}),
+            })
+            if user_input is not None:
+                # ← ТУТ! Сохраняем весь список, не только один!
+                devices = list(self.config_entry.options.get("devices", []))  # копия списка!
+                devices.append(user_input)
+                return self.async_create_entry(title="Devices", data={"devices": devices})
+            return self.async_show_form(step_id="add_device", data_schema=schema)
+

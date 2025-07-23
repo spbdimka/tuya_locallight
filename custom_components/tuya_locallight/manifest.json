@@ -1,0 +1,10 @@
+{
+  "domain": "tuya_locallight",
+  "name": "Tuya LocalLight",
+  "version": "0.1.0",
+  "documentation": "https://github.com/spbdimka/tuya_locallight",
+  "requirements": ["tinytuya==1.17.2"],
+  "dependencies": [],
+  "codeowners": ["@spbdimka"],
+  "config_flow": true
+}

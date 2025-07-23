@@ -1,0 +1,19 @@
+name: "Dimming light track"
+primary_entity:
+  entity: light
+  dps:
+    - id: 20
+      type: bool
+      name: switch
+    - id: 22
+      type: int
+      name: brightness
+      range:
+        min: 10
+        max: 1000
+    - id: 23
+      type: int
+      name: color_temp
+      range:
+        min: 0
+        max: 1000

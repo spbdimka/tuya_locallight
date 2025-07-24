@@ -3,8 +3,23 @@ from homeassistant.components.light import (
     ATTR_BRIGHTNESS, ATTR_COLOR_TEMP, SUPPORT_BRIGHTNESS, SUPPORT_COLOR_TEMP, LightEntity
 )
 from .const import DOMAIN
+import functools
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_load_yaml_file(hass, path):
+    import yaml
+    return await hass.async_add_executor_job(
+        functools.partial(_sync_load_yaml_file, path)
+    )
+
+def _sync_load_yaml_file(path):
+    import yaml
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     gateway_conf = entry.data
@@ -21,11 +36,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
     # load profiles
     profiles = {}
+    profiles = {}
     profdir = os.path.join(os.path.dirname(__file__), "devices")
     for fname in os.listdir(profdir):
         if fname.endswith(".yaml"):
-            with open(os.path.join(profdir, fname), encoding="utf-8") as f:
-                profiles[fname[:-5]] = yaml.safe_load(f)
+            yaml_path = os.path.join(profdir, fname)
+            profiles[fname[:-5]] = await async_load_yaml_file(hass, yaml_path)
 
     entities = []
     for device in options:

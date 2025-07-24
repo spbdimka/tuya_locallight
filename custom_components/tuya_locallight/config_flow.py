@@ -41,7 +41,7 @@ class TuyaLocalLightConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry):
-        self.config_entry = config_entry
+        self.entry_id = config_entry.entry_id
 
     async def async_step_init(self, user_input=None):
         # Show all current devices, allow to add new or edit/remove existing

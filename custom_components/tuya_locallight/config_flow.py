@@ -37,15 +37,22 @@ class TuyaLocalLightConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return TuyaLocalLightOptionsFlowHandler(config_entry)
+        return TuyaLocalLightOptionsFlowHandler(config_entry.entry_id)
 
 class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry):
-        # self.config_entry = config_entry  # Deprecated!
-        pass
+    def __init__(self, entry_id):
+        self.entry_id = entry_id
+
+    @property
+    def config_entry(self):
+        """Динамически получить entry по entry_id (современно и безопасно)."""
+        entries = self.hass.config_entries.async_entries(DOMAIN)
+        for entry in entries:
+            if entry.entry_id == self.entry_id:
+                return entry
+        return None
 
     async def async_step_init(self, user_input=None):
-        # Simple: сразу идём на добавление устройства
         return await self.async_step_add_device()
 
     async def async_step_add_device(self, user_input=None):
@@ -57,8 +64,7 @@ class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
             vol.Required(CONF_PROFILE, default=profiles[0][0]): vol.In({p[0]: p[1] for p in profiles}),
         })
         if user_input is not None:
-            # Сохраняем весь список устройств, не только новый!
-            devices = list(self.options.get("devices", []))
+            devices = list(self.config_entry.options.get("devices", []))
             devices.append(user_input)
             return self.async_create_entry(title="Devices", data={"devices": devices})
         return self.async_show_form(step_id="add_device", data_schema=schema)

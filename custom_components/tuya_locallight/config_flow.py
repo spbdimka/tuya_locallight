@@ -45,7 +45,7 @@ class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
 
     @property
     def config_entry(self):
-        """Динамически получить entry по entry_id (современно и безопасно)."""
+        """Get entry by entry_id dynamically."""
         entries = self.hass.config_entries.async_entries(DOMAIN)
         for entry in entries:
             if entry.entry_id == self.entry_id:
@@ -53,7 +53,20 @@ class TuyaLocalLightOptionsFlowHandler(config_entries.OptionsFlow):
         return None
 
     async def async_step_init(self, user_input=None):
-        return await self.async_step_add_device()
+        # Список всех устройств (если есть)
+        devices = list(self.config_entry.options.get("devices", []))
+        device_list = "\n".join(
+            f"- {d['name']} (did: {d['did']}, cid: {d['cid']}, profile: {d['profile']})" for d in devices
+        ) or "Нет добавленных устройств"
+        return self.async_show_form(
+            step_id="init",
+            description_placeholders={"devices": device_list},
+            data_schema=vol.Schema({}),
+            last_step=False,
+            errors={},
+            # Кнопка "Добавить устройство"
+            next_step="add_device"
+        )
 
     async def async_step_add_device(self, user_input=None):
         profiles = get_profiles()
